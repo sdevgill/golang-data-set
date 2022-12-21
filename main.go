@@ -30,3 +30,17 @@ func readData(filename string) []Download {
 
 	return data, nil
 }
+
+// Converts bytes per second to megabits per second
+func bytesToMegabits(bytes float64) float64 {
+	return bytes * 8 / 1000000
+}
+
+// Calculate the average download speed
+func average(values []float64) float64 {
+	sum := 0.0
+	for _, value := range values {
+		sum += value
+	}
+	return sum / float64(len(values))
+}
