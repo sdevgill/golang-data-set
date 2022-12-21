@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"io/ioutil"
+	"sort"
 	"time"
 )
 
@@ -43,4 +44,21 @@ func average(values []float64) float64 {
 		sum += value
 	}
 	return sum / float64(len(values))
+}
+
+// Calculate the median download speed
+func median(values []float64) float64 {
+	length := len(values)
+	if length == 0 {
+		return 0
+	}
+
+	// Sort the values
+	sort.Float64s(values)
+
+	// Return the middle value
+	if length%2 == 0 {
+		return (values[length/2-1] + values[length/2]) / 2
+	}
+	return values[length/2]
 }
