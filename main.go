@@ -2,63 +2,70 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
+	"os"
 	"sort"
-	"time"
 )
 
-type Download struct {
-	Dtime       time.Time `json:"dtime"`
-	MetricValue float64   `json:"metricValue"`
+type DataPoint struct {
+	MetricValue float64 `json:"metricValue"`
+	Dtime       string  `json:"dtime"`
 }
 
-// File
-const filename = "../inputs/1.json"
-
-// Reads data from a JSON file and returns a slice of Download structures
-func readData(filename string) []Download {
-	// Read the file
-	bytes, err := ioutil.ReadFile(filename)
+func main() {
+	// Read the input data
+	bytes, err := ioutil.ReadFile("./inputs/1.json")
 	if err != nil {
-		return nil, err
+		fmt.Println("Error reading input file:", err)
+		os.Exit(1)
 	}
 
-	// Unmarshal the JSON data
-	var data []Download
+	// Unmarshal the JSON into a slice of DataPoint objects
+	var data []DataPoint
 	if err := json.Unmarshal(bytes, &data); err != nil {
-		return nil, err
+		fmt.Println("Error parsing JSON:", err)
+		os.Exit(1)
 	}
 
-	return data, nil
-}
+	// Sort the data by date
+	sort.Slice(data, func(i, j int) bool { return data[i].Dtime < data[j].Dtime })
 
-// Converts bytes per second to megabits per second
-func bytesToMegabits(bytes float64) float64 {
-	return bytes * 8 / 1000000
-}
+	// Calculate the min, max, median and average
+	var sum float64
 
-// Calculate the average download speed
-func average(values []float64) float64 {
-	sum := 0.0
-	for _, value := range values {
-		sum += value
-	}
-	return sum / float64(len(values))
-}
-
-// Calculate the median download speed
-func median(values []float64) float64 {
-	length := len(values)
-	if length == 0 {
-		return 0
+	min := data[0].MetricValue
+	max := data[0].MetricValue
+	for _, datapoint := range data {
+		sum += datapoint.MetricValue
+		if datapoint.MetricValue < min {
+			min = datapoint.MetricValue
+		}
+		if datapoint.MetricValue > max {
+			max = datapoint.MetricValue
+		}
 	}
 
-	// Sort the values
-	sort.Float64s(values)
-
-	// Return the middle value
-	if length%2 == 0 {
-		return (values[length/2-1] + values[length/2]) / 2
+	n := len(data)
+	avg := sum / float64(n)
+	medianIndex := int(n / 2)
+	var median float64
+	if n%2 == 0 {
+		median = (data[medianIndex-1].MetricValue + data[medianIndex].MetricValue) / 2
+	} else {
+		median = data[medianIndex].MetricValue
 	}
-	return values[length/2]
+
+	// Print the results
+	fmt.Printf("Metric Analyser v1.0.0\n")
+	fmt.Printf("=========================\n")
+	fmt.Println("\nPeriod checked:")
+	fmt.Println("\n  From:", data[0].Dtime)
+	fmt.Println("  To:", data[len(data)-1].Dtime)
+	fmt.Println("\nStatistics:")
+	fmt.Println("\n    Unit: Megabits per second")
+	fmt.Printf("\n    Min: %.2f\n", min/100000)
+	fmt.Printf("    Max: %.2f\n", max/100000)
+	fmt.Printf("    Median: %.2f\n", median/100000)
+	fmt.Printf("    Average: %.2f\n", avg/100000)
 }
