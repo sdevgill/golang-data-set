@@ -65,6 +65,15 @@ func main() {
 
 // Read input from a file
 func readInput(inputPath string) ([]DataPoint, error) {
+	// Check if the input file exists
+	if _, err := os.Stat(inputPath); os.IsNotExist(err) {
+		return nil, fmt.Errorf("Error: input file does not exist at path %s", inputPath)
+	}
+	if fi, _ := os.Stat(inputPath); fi.IsDir() {
+		return nil, fmt.Errorf("Error: input path %s is a directory, expected a file", inputPath)
+	}
+
+	// Read the contents of the input file
 	bytes, err := ioutil.ReadFile(inputPath)
 	if err != nil {
 		return nil, err
@@ -74,6 +83,9 @@ func readInput(inputPath string) ([]DataPoint, error) {
 	var data []DataPoint
 	if err := json.Unmarshal(bytes, &data); err != nil {
 		return nil, err
+	}
+	if len(data) == 0 {
+		return nil, fmt.Errorf("Error: input file is empty")
 	}
 
 	return data, nil
@@ -86,6 +98,11 @@ func sortData(inputData []DataPoint) ([]DataPoint, error) {
 }
 
 func calculateStatistics(inputData []DataPoint) (float64, float64, float64, float64, error) {
+	// Check if input data is not empty
+	if len(inputData) == 0 {
+		return 0, 0, 0, 0, fmt.Errorf("Error: input data is empty")
+	}
+
 	var sum float64
 
 	// Initialize the min and max values with the first data point
