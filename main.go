@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"os"
 	"sort"
 )
@@ -12,6 +13,12 @@ import (
 type DataPoint struct {
 	MetricValue float64 `json:"metricValue"`
 	Dtime       string  `json:"dtime"`
+}
+
+// Convert to Megabits per second
+func convertToMegabits(metricValue float64) float64 {
+	megabits := (metricValue / 1000000) * 8
+	return megabits
 }
 
 // Main function
@@ -37,8 +44,14 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Convert min, max, median, and avg values to Megabits
+	minMegabits := convertToMegabits(min)
+	maxMegabits := convertToMegabits(max)
+	medianMegabits := convertToMegabits(median)
+	avgMegabits := convertToMegabits(avg)
+
 	// Print the results
-	printResults(sortedData, min, max, median, avg)
+	printResults(sortedData, minMegabits, maxMegabits, medianMegabits, avgMegabits)
 }
 
 // Helper functions
@@ -87,17 +100,24 @@ func calculateStatistics(data []DataPoint) (float64, float64, float64, float64, 
 	n := len(data)
 	avg := sum / float64(n)
 
+	// Create a slice of metric values and sort it
+	metricValues := make([]float64, len(data))
+	for i, datapoint := range data {
+		metricValues[i] = datapoint.MetricValue
+	}
+	sort.Float64s(metricValues)
+
 	// Calculate the median value
 	medianIndex := int(n / 2)
 	var median float64
-
 	// If there is an even number of data points, calculate the median as the average of the two middle values
 	if n%2 == 0 {
-		median = (data[medianIndex-1].MetricValue + data[medianIndex].MetricValue) / 2
+		median = (metricValues[medianIndex-1] + metricValues[medianIndex]) / 2
 	} else {
 		// If there is an odd number of data points, the median is the middle value
-		median = data[medianIndex].MetricValue
+		median = metricValues[medianIndex]
 	}
+	median = math.Round(median*100) / 100
 
 	return min, max, median, avg, nil
 }
@@ -107,13 +127,13 @@ func printResults(data []DataPoint, min float64, max float64, median float64, av
 	fmt.Printf("\nMetric Analyser v1.0.0\n")
 	fmt.Printf("=========================\n")
 	fmt.Println("\nPeriod checked:")
-	fmt.Println("\n  From:", data[0].Dtime)
-	fmt.Println("  To:", data[len(data)-1].Dtime)
+	fmt.Println("\n	From:", data[0].Dtime)
+	fmt.Println("	To:", data[len(data)-1].Dtime)
 	fmt.Println("\nStatistics:")
-	fmt.Println("\n    Unit: Megabits per second")
-	fmt.Printf("\n    Min: %.2f\n", min/100000)
-	fmt.Printf("    Max: %.2f\n", max/100000)
-	fmt.Printf("    Median: %.2f\n", median/100000)
-	fmt.Printf("    Average: %.2f\n", avg/100000)
+	fmt.Println("\n	Unit: Megabits per second")
+	fmt.Printf("\n	Average: %.2f Megabits\n", avg)
+	fmt.Printf("	Min: %.2f Megabits\n", min)
+	fmt.Printf("	Max: %.2f Megabits\n", max)
+	fmt.Printf("	Median: %.2f Megabits\n", median)
 	fmt.Println()
 }
