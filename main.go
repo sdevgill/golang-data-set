@@ -59,6 +59,20 @@ func main() {
 
 	// Print the results
 	printResults(sortedInputData, minMegabits, maxMegabits, medianMegabits, avgMegabits)
+
+	// Get the statistics
+	output := printResults(sortedInputData, minMegabits, maxMegabits, medianMegabits, avgMegabits)
+
+	// Create the output file
+	outputFile, err := os.Create("./outputs/output.txt")
+	if err != nil {
+		fmt.Println("Error creating output file:", err)
+		os.Exit(1)
+	}
+	defer outputFile.Close()
+
+	// Write the results to the output file
+	fmt.Fprint(outputFile, output)
 }
 
 // Helper functions
@@ -147,17 +161,17 @@ func calculateStatistics(inputData []DataPoint) (float64, float64, float64, floa
 }
 
 // Print the results
-func printResults(data []DataPoint, min float64, max float64, median float64, avg float64) {
-	fmt.Printf("\nMetric Analyser v1.0.0\n")
-	fmt.Printf("=========================\n")
-	fmt.Println("\nPeriod checked:")
-	fmt.Println("\n	From:", data[0].Dtime)
-	fmt.Println("	To:", data[len(data)-1].Dtime)
-	fmt.Println("\nStatistics:")
-	fmt.Println("\n	Unit: Megabits per second")
-	fmt.Printf("\n	Average: %.2f Megabits\n", avg)
-	fmt.Printf("	Min: %.2f Megabits\n", min)
-	fmt.Printf("	Max: %.2f Megabits\n", max)
-	fmt.Printf("	Median: %.2f Megabits\n", median)
-	fmt.Println()
+func printResults(data []DataPoint, min float64, max float64, median float64, avg float64) string {
+	output := fmt.Sprintf("Metric Analyser v1.0.0\n")
+	output += fmt.Sprintf("=========================\n")
+	output += fmt.Sprintf("\nPeriod checked:\n")
+	output += fmt.Sprintf("\n	From: %s\n", data[0].Dtime)
+	output += fmt.Sprintf("	To: %s\n", data[len(data)-1].Dtime)
+	output += fmt.Sprintf("\nStatistics:\n")
+	output += fmt.Sprintf("\n	Unit: Megabits per second\n")
+	output += fmt.Sprintf("\n	Average: %.2f \n", avg)
+	output += fmt.Sprintf("	Min: %.2f \n", min)
+	output += fmt.Sprintf("	Max: %.2f \n", max)
+	output += fmt.Sprintf("	Median: %.2f \n", median)
+	return output
 }
