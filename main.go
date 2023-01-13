@@ -11,7 +11,7 @@ import (
 
 const (
 	// InputFilePath - constant for input file path
-	InputFilePath = "./inputs/1.json"
+	InputFilePath = "./inputs/2.json"
 	// MegaBitMultiplier - constant for Megabits/second conversion
 	MegaBitMultiplier = 8
 )

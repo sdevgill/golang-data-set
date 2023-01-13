@@ -10,7 +10,7 @@ Statistics:
 
 	Unit: Megabits per second
 
-	Average: 102.70 
-	Min: 101.25 
+	Average: 95.50 
+	Min: 27.63 
 	Max: 104.08 
-	Median: 102.93 
+	Median: 102.91 
